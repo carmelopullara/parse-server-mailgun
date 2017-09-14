@@ -24,7 +24,7 @@ class MailgunAdapter extends MailAdapter {
         if (!options) {
             throw new Error(ERRORS.missing_configuration);
         }
-        
+
         super(options);
 
         const { apiKey, domain, fromAddress } = options;
@@ -63,7 +63,7 @@ class MailgunAdapter extends MailAdapter {
      */
     _sendMail(options) {
         let templateVars, message, selectedTemplate = {};
-        
+
         let templateName = selectedTemplate.name = options.templateName;
         if (!templateName) {
             throw new Error(ERRORS.invalid_template_name);
@@ -77,7 +77,7 @@ class MailgunAdapter extends MailAdapter {
         // The adapter is used directly by the user's code instead via Parse Server
         if (options.direct) {
             const { subject, fromAddress, recipient, variables, extra } = options;
-            
+
             if (!recipient) {
                 throw new Error(`Cannot send email with template ${templateName} without a recipient`);
             }
@@ -91,7 +91,8 @@ class MailgunAdapter extends MailAdapter {
         } else {
             const { link, appName, user } = options;
             const { callback } = template;
-            
+            const lang = user.get('lang') || 'en';
+
             let userVars;
             if (callback && typeof callback === 'function') {
                 userVars = callback(user);
@@ -108,7 +109,7 @@ class MailgunAdapter extends MailAdapter {
             message = {
                 from: this.fromAddress,
                 to: user.get('email'),
-                subject: template.subject
+                subject: template.subjects.lang
             };
         }
 
@@ -180,7 +181,9 @@ class MailgunAdapter extends MailAdapter {
      * @returns {Promise}
      */
     sendPasswordResetEmail({ link, appName, user }) {
-        return this._sendMail({ templateName: 'passwordResetEmail', link, appName, user });
+        const lang = user.get('lang') || 'en';
+
+        return this._sendMail({ templateName: `passwordResetEmail_${lang}`, link, appName, user });
     }
 
     /**
@@ -190,7 +193,9 @@ class MailgunAdapter extends MailAdapter {
      * @returns {Promise}
      */
     sendVerificationEmail({ link, appName, user }) {
-        return this._sendMail({ templateName: 'verificationEmail', link, appName, user });
+      const lang = user.get('lang') || 'en';
+
+      return this._sendMail({ templateName: `verificationEmail_${lang}`, link, appName, user });
     }
 
     /**
